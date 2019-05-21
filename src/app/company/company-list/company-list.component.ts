@@ -2,38 +2,25 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Company } from '../company';
 import { CompanyService } from '../company.service';
 import { tap, takeWhile } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 
 @Component({
   selector: 'fbc-company-list',
   templateUrl: './company-list.component.html',
   styleUrls: ['./company-list.component.scss']
 })
-export class CompanyListComponent implements OnInit, OnDestroy {
+export class CompanyListComponent implements OnInit {
 
-  componentExists = true;
 
   constructor(private companySvc: CompanyService) {
   }
 
-  companies: Company[];
+  companies$: Observable<Company[]>;
 
   ngOnInit() {
-    this.companySvc.getCompanies()
-      .pipe(
-        takeWhile(c => this.componentExists),
-        tap(c => console.log(`Tap got ${c.length} companies`))
-      )
-      .subscribe(
-        next => this.companies = next,
-        error => console.error('ERROR', error),
-        () => console.log('Complete')
-      );
-
+    this.companies$ = this.companySvc.getCompanies();
   }
 
-  ngOnDestroy() {
-    this.componentExists = false;
-  }
+
 
 }
