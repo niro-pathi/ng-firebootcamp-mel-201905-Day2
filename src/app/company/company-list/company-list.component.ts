@@ -17,11 +17,21 @@ export class CompanyListComponent implements OnInit {
   companies$: Observable<Company[]>;
 
   ngOnInit() {
-    this.companies$ = this.companySvc.getCompanies()
-      // inject a sort transform into the pipeline
-      .pipe(map(c => c.sort((a, b) => a.name.localeCompare(b.name))));
+    this.companies$ = this.getCompanies();
   }
 
+  deleteCompany(company: Company){
+    let a$: Observable<Company> = this.companySvc.deleteCompany(company);
 
+    a$.subscribe(c => {
+      this.companies$ = this.getCompanies();
+    });
+  }
+
+  getCompanies() {
+    return this.companySvc.getCompanies()
+    // inject a sort transform into the pipeline
+    .pipe(map(c => c.sort((a, b) => a.name.localeCompare(b.name))));
+  }
 
 }
