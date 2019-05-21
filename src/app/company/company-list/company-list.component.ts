@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Company } from '../company';
 import { CompanyService } from '../company.service';
-import { tap, takeWhile } from 'rxjs/operators';
+import { tap, takeWhile, map } from 'rxjs/operators';
 import { Subscription, Observable } from 'rxjs';
 
 @Component({
@@ -11,14 +11,19 @@ import { Subscription, Observable } from 'rxjs';
 })
 export class CompanyListComponent implements OnInit {
 
-
   constructor(private companySvc: CompanyService) {
   }
 
   companies$: Observable<Company[]>;
 
   ngOnInit() {
-    this.companies$ = this.companySvc.getCompanies();
+    this.companies$ = this.companySvc.getCompanies()
+    //   .pipe(map(c => c.sort((a, b) => {
+    //     if (a.name < b.name) { return -1; }
+    //     if (a.name > b.name) { return 1; }
+    //     return 0;
+    // })))
+    ;
   }
 
 
