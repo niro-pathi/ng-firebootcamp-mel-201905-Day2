@@ -18,12 +18,8 @@ export class CompanyListComponent implements OnInit {
 
   ngOnInit() {
     this.companies$ = this.companySvc.getCompanies()
-    //   .pipe(map(c => c.sort((a, b) => {
-    //     if (a.name < b.name) { return -1; }
-    //     if (a.name > b.name) { return 1; }
-    //     return 0;
-    // })))
-    ;
+      // inject a sort transform into the pipeline
+      .pipe(map(c => c.sort((a, b) => a.name.localeCompare(b.name))));
   }
 
 
