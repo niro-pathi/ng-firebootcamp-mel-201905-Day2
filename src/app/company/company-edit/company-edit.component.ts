@@ -45,12 +45,11 @@ buildForm() {
 saveCompany() {
   console.log('SAVING FORM', this.companyForm);
   if (this.isNewCompany) {
-    this.companyService.addCompany(this.companyForm.value)
-    .subscribe(c => this.router.navigateByUrl('/company/list'));
-  }else {
+    this.companyService.addCompany(this.companyForm.value);
+  } else {
     const company: Company = {... this.companyForm.value, id: this.companyId };
-    this.companyService.updateCompany(company)
-    .subscribe(c => this.router.navigateByUrl('/company/list'));
+    this.companyService.updateCompany(company);
   }
+  this.router.navigateByUrl('/company/list');
 }
 }

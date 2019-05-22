@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Company } from './company';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { catchError, retry, tap } from 'rxjs/operators';
 import { errorHandler } from '@angular/platform-browser/src/browser';
@@ -13,15 +13,25 @@ export class CompanyService {
 
   constructor(
     private httpClient: HttpClient
-  ) { }
+  ) { 
+    this.loadCompanies();
+  }
 
   API_BASE = environment.API_BASE;
 
-  getCompanies(): Observable<Company[]> {
-    return this.httpClient.get<Company[]>(`${this.API_BASE}/company`
-    ).pipe(
+  companies$: BehaviorSubject<Company[]> = new BehaviorSubject<Company[]>([]);
+
+  loadCompanies() {
+    this.httpClient.get<Company[]>(`${this.API_BASE}/company`)
+    .pipe(
       // retry(10),
-      catchError(e => this.errorHandler<Company[]>(e)));
+      catchError(e => this.errorHandler<Company[]>(e)),
+    ).
+    subscribe(companies => this.companies$.next(companies));
+  }
+
+  getCompanies(): Observable<Company[]> {
+    return this.companies$;
   }
 
   getCompany(companyId: number): Observable<Company> {
@@ -29,26 +39,30 @@ export class CompanyService {
     ).pipe(catchError(e => this.errorHandler<Company>(e)));
   }
 
-  deleteCompany(company: Company): Observable<Company> {
-    console.log("Delete Company", company.id);
-    return this.httpClient.delete<Company>(`${this.API_BASE}/company/${company.id}`
-    ).pipe(catchError(e => this.errorHandler<Company>(e)));
+  deleteCompany(company: Company) {
+    console.log('Delete Company', company.id);
+    this.httpClient.delete<Company>(`${this.API_BASE}/company/${company.id}`)
+    .pipe(
+      // retry(10),
+      tap(c => console.log("HttpClient.delete called")),
+      catchError(e => this.errorHandler<Company>(e)),
+    ).subscribe(c => this.loadCompanies());
   }
 
-  updateCompany(company: Company): Observable<Company> {
+  updateCompany(company: Company) {
     console.log("Update Company", company.id);
-    return this.httpClient.put<Company>(`${this.API_BASE}/company/${company.id}`,company,
+    this.httpClient.put<Company>(`${this.API_BASE}/company/${company.id}`,company,
     { headers: new HttpHeaders().set('content-type', 'application/json') }
-    ).pipe(catchError(e => this.errorHandler<Company>(e)));
+    ).pipe(catchError(e => this.errorHandler<Company>(e)),
+    ).subscribe(c => this.loadCompanies());
   }
 
-  addCompany(company: Company): Observable<Company> {
-    return this.httpClient.post<Company>(
-      `${this.API_BASE}/company`, company,
+  addCompany(company: Company) {
+    this.httpClient.post<Company>(`${this.API_BASE}/company`, company,
       { headers: new HttpHeaders().set('content-type', 'application/json') }
-    ).pipe(catchError(e => this.errorHandler<Company>(e)));
+    ).pipe(catchError(e => this.errorHandler<Company>(e)),
+    ).subscribe(c => this.loadCompanies());
   }
- 
 
   errorHandler<T>(error: Error): Observable<T> {
     // TODO: Implement proper error handler (Toaster...)
