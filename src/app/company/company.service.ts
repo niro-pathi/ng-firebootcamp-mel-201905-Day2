@@ -18,35 +18,42 @@ export class CompanyService {
   API_BASE = environment.API_BASE;
 
   getCompanies(): Observable<Company[]> {
-    return this.httpClient.get<Company[]>(`${this.API_BASE}/company`)
-    .pipe(
+    return this.httpClient.get<Company[]>(`${this.API_BASE}/company`
+    ).pipe(
       // retry(10),
-      catchError(this.errorHandling),
-    );
+      catchError(e => this.errorHandler<Company[]>(e)));
+  }
+
+  getCompany(companyId: number): Observable<Company> {
+    return this.httpClient.get<Company>(`${this.API_BASE}/company/${companyId}`
+    ).pipe(catchError(e => this.errorHandler<Company>(e)));
   }
 
   deleteCompany(company: Company): Observable<Company> {
     console.log("Delete Company", company.id);
-    return this.httpClient.delete<Company>(`${this.API_BASE}/company/${company.id}`)
-    .pipe(
-      // retry(10),
-      tap(c => console.log("HttpClient.delete called")),
-      catchError(this.errorHandling),
-    );
+    return this.httpClient.delete<Company>(`${this.API_BASE}/company/${company.id}`
+    ).pipe(catchError(e => this.errorHandler<Company>(e)));
+  }
+
+  updateCompany(company: Company): Observable<Company> {
+    console.log("Update Company", company.id);
+    return this.httpClient.put<Company>(`${this.API_BASE}/company/${company.id}`,company,
+    { headers: new HttpHeaders().set('content-type', 'application/json') }
+    ).pipe(catchError(e => this.errorHandler<Company>(e)));
   }
 
   addCompany(company: Company): Observable<Company> {
     return this.httpClient.post<Company>(
       `${this.API_BASE}/company`, company,
       { headers: new HttpHeaders().set('content-type', 'application/json') }
-    ).pipe(catchError(e => this.errorHandling(e)));
+    ).pipe(catchError(e => this.errorHandler<Company>(e)));
   }
  
 
-  errorHandling(error: Error): Observable<any> {
+  errorHandler<T>(error: Error): Observable<T> {
     // TODO: Implement proper error handler (Toaster...)
     console.error('ERROR', error);
 
-    return new Observable();
+    return new Observable<T>();
   }
 }
